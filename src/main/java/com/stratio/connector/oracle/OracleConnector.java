@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-package com.stratio.connector.skeleton;
+package com.stratio.connector.oracle;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.connector.skeleton.engine.SkeletonMetadataEngine;
-import com.stratio.connector.skeleton.engine.SkeletonQueryEngine;
-import com.stratio.connector.skeleton.engine.SkeletonStorageEngine;
+import com.stratio.connector.oracle.engine.OracleMetadataEngine;
+import com.stratio.connector.oracle.engine.OracleQueryEngine;
+import com.stratio.connector.oracle.engine.OracleStorageEngine;
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
 import com.stratio.crossdata.common.connector.IConfiguration;
 import com.stratio.crossdata.common.connector.IConnector;
@@ -47,21 +47,21 @@ import com.stratio.crossdata.connectors.ConnectorApp;
  * Connector main class that launches the connector actor wrapper and implements the
  * {@link com.stratio.crossdata.common.connector.IConnector} interface.
  */
-public class SkeletonConnector implements IConnector{
+public class OracleConnector implements IConnector{
 
     /**
      * Class logger.
      */
-    private static final Logger LOG = Logger.getLogger(SkeletonConnector.class);
+    private static final Logger LOG = Logger.getLogger(OracleConnector.class);
 
     @Override
     public String getConnectorName() {
-        return "SkeletonConnector";
+        return "OracleConnector";
     }
 
     @Override
     public String[] getDatastoreName() {
-        return new String[]{"SkeletonDatastore"};
+        return new String[]{"OracleDatastore"};
     }
 
     @Override
@@ -93,27 +93,27 @@ public class SkeletonConnector implements IConnector{
 
     @Override
     public IStorageEngine getStorageEngine() throws UnsupportedException {
-        return new SkeletonStorageEngine();
+        return new OracleStorageEngine();
     }
 
     @Override
     public IQueryEngine getQueryEngine() throws UnsupportedException {
-        return new SkeletonQueryEngine();
+        return new OracleQueryEngine();
     }
 
     @Override
     public IMetadataEngine getMetadataEngine() throws UnsupportedException {
-        return new SkeletonMetadataEngine();
+        return new OracleMetadataEngine();
     }
 
     /**
-     * Run a Skeleton Connector using a {@link com.stratio.crossdata.connectors.ConnectorApp}.
+     * Run a Oracle Connector using a {@link com.stratio.crossdata.connectors.ConnectorApp}.
      * @param args The arguments.
      */
     public static void main(String [] args){
-        SkeletonConnector skeletonConnector = new SkeletonConnector();
+        OracleConnector oracleConnector = new OracleConnector();
         ConnectorApp connectorApp = new ConnectorApp();
-        connectorApp.startup(skeletonConnector);
+        connectorApp.startup(oracleConnector);
     }
 
 }

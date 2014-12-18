@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.stratio.connector.skeleton.engine;
+package com.stratio.connector.oracle.engine;
 
 import com.stratio.crossdata.common.connector.IQueryEngine;
 import com.stratio.crossdata.common.connector.IResultHandler;
@@ -32,9 +32,9 @@ import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 import com.stratio.crossdata.common.result.QueryResult;
 
 /**
- * Skeleton query engine
+ * Oracle query engine
  */
-public class SkeletonQueryEngine implements IQueryEngine{
+public class OracleQueryEngine implements IQueryEngine{
 
     @Override
     public QueryResult execute(LogicalWorkflow workflow) throws ConnectorException {
