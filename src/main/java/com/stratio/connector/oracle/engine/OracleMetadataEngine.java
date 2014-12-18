@@ -24,21 +24,26 @@
 
 package com.stratio.connector.oracle.engine;
 
+import com.stratio.connector.oracle.statements.CreateTableStatement;
 import com.stratio.crossdata.common.connector.IMetadataEngine;
-import com.stratio.crossdata.common.data.AlterOptions;
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.data.*;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 
+import java.sql.Statement;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Oracle metadata engine implementation.
  */
 public class OracleMetadataEngine implements IMetadataEngine{
+
+    private Map<String, Statement> sessions;
+    private Statement session = null;
 
     @Override
     public void createCatalog(ClusterName targetCluster, CatalogMetadata catalogMetadata)
@@ -49,7 +54,29 @@ public class OracleMetadataEngine implements IMetadataEngine{
     @Override
     public void createTable(ClusterName targetCluster, TableMetadata tableMetadata)
             throws ConnectorException {
-        throw new UnsupportedException("Method not implemented");
+        session = sessions.get(targetCluster.getName());
+
+        Map<Selector, Selector> tableOptions = tableMetadata.getOptions();
+        List<ColumnName> primaryKey = tableMetadata.getPrimaryKey();
+        List<ColumnName> partitionKey = tableMetadata.getPartitionKey();
+        List<ColumnName> clusterKey = tableMetadata.getClusterKey();
+
+        int primaryKeyType;
+        if (primaryKey.size() == 1) {
+            primaryKeyType = PRIMARY_SINGLE;
+        } else {
+            if (clusterKey.isEmpty()) {
+                primaryKeyType = PRIMARY_AND_CLUSTERING_SPECIFIED;
+            } else {
+                primaryKeyType = PRIMARY_COMPOSED;
+            }
+        }
+        String stringOptions = getStringOptions(tableOptions);
+
+        CreateTableStatement tableStatement =
+                new CreateTableStatement(tableMetadata, primaryKey, partitionKey, clusterKey,
+                        primaryKeyType, stringOptions, true);
+        CassandraExecutor.execute(tableStatement.toString(), session);
     }
 
     @Override

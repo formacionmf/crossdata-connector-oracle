@@ -24,11 +24,9 @@
 
 package com.stratio.connector.oracle;
 
+import com.stratio.connector.oracle.engine.*;
 import org.apache.log4j.Logger;
 
-import com.stratio.connector.oracle.engine.OracleMetadataEngine;
-import com.stratio.connector.oracle.engine.OracleQueryEngine;
-import com.stratio.connector.oracle.engine.OracleStorageEngine;
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
 import com.stratio.crossdata.common.connector.IConfiguration;
 import com.stratio.crossdata.common.connector.IConnector;
@@ -43,6 +41,14 @@ import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.connectors.ConnectorApp;
 
+import javax.swing.plaf.nimbus.State;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Connector main class that launches the connector actor wrapper and implements the
  * {@link com.stratio.crossdata.common.connector.IConnector} interface.
@@ -54,6 +60,8 @@ public class OracleConnector implements IConnector{
      */
     private static final Logger LOG = Logger.getLogger(OracleConnector.class);
 
+    private Map<String, Statement> sessions;
+
     @Override
     public String getConnectorName() {
         return "OracleConnector";
@@ -61,34 +69,78 @@ public class OracleConnector implements IConnector{
 
     @Override
     public String[] getDatastoreName() {
-        return new String[]{"OracleDatastore"};
+        return new String[]{"Oracle"};
     }
 
     @Override
     public void init(IConfiguration configuration) throws InitializationException {
         //TODO Add init functionality. This method will be called once when the connector is launched.
         //IConfiguration currently does not provide any external information.
+        LOG.info("init");
     }
 
     @Override public void connect(ICredentials credentials, ConnectorClusterConfig config) throws ConnectionException {
         //TODO Add connect functionality. The connector should establish the connection with the underlying
         //datastore. ICredentials is currently not supported.
-        throw new ConnectionException("Method not implemented");
+
+        ClusterName clusterName = config.getName();
+        Map<String, String> clusterOptions = config.getOptions();
+
+        EngineConfig engineConfig = new EngineConfig();
+
+        engineConfig.setOracleHost(
+                clusterOptions.get("Host"));
+        engineConfig.setOraclePort(Integer.parseInt(clusterOptions.get("Port")));
+        engineConfig.setCredentials(credentials);
+
+
+        Engine engine = new Engine(engineConfig);
+
+        LOG.info("Oracle session created.");
+
+        sessions.put(clusterName.getName(), engine.getSession());
     }
 
     @Override public void close(ClusterName name) throws ConnectionException {
-        //TODO Add close functionality. The connector should close the connection with the given cluster.
-        throw new ConnectionException("Method not implemented");
+        LOG.info("Closing oracle session");
+        try {
+            sessions.get(name.getName()).close();
+            sessions.remove(name.getName());
+        } catch (SQLException e) {
+            LOG.info("ERROR oracle session");
+            e.printStackTrace();
+        }
     }
 
     @Override public void shutdown() throws ExecutionException {
-        //This method is called when the user decides to stop the connector service.
-        throw new ExecutionException("Method not implemented");
+        for (Statement s : sessions.values()) {
+            try {
+                s.close();
+            } catch (SQLException e) {
+                LOG.info("ERROR oracle session");
+                e.printStackTrace();
+            }
+        }
+        sessions = new HashMap<>();
     }
 
     @Override public boolean isConnected(ClusterName name) {
-        //TODO Add isConnected funcionality to determine whether the connector has access to a given cluster.
-        return false;
+        boolean connected;
+
+        if (sessions.get(name.getName()) != null) {
+            try {
+                if (sessions.get(name.getName()).isClosed()) {
+                    connected = false;
+                } else {
+                    connected = true;
+                }
+            } catch (SQLException e) {
+                connected = false;
+            }
+        } else {
+            connected = false;
+        }
+        return connected;
     }
 
     @Override

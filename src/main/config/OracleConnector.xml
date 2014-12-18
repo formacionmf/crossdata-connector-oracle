@@ -2,10 +2,10 @@
 <!-- This file contains the manifest for the connector. -->
 <Connector>
     <!-- Name of the connector as it will be identified in Crossdata -->
-    <ConnectorName>SkeletonConnector</ConnectorName>
+    <ConnectorName>OracleConnector</ConnectorName>
     <!-- Define the list of datastore this connector is able to access. -->
     <DataStores>
-        <DataStoreName>SkeletonDatastore</DataStoreName>
+        <DataStoreName>OracleDatastore</DataStoreName>
     </DataStores>
     <!-- Connector version -->
     <Version>0.0.1</Version>

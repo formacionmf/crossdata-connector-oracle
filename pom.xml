@@ -27,20 +27,20 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.stratio.connector</groupId>
-    <artifactId>crossdata-connector-skeleton</artifactId>
+    <artifactId>crossdata-connector-oracle</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>Stratio Crossdata Connector Skeleton</name>
+    <name>Stratio Crossdata Connector Oracle</name>
     <description>Base Crossdata connector project to develop other connectors</description>
-    <url>https://github.com/Stratio/crossdata-connector-skeleton</url>
+    <url>https://github.com/Stratio/crossdata-connector-oracle</url>
     <packaging>jar</packaging>
 
     <scm>
-        <url>scm:git:git@github.com:Stratio/crossdata-connector-skeleton.git</url>
-        <connection>https://github.com/Stratio/crossdata-connector-skeleton/</connection>
+        <url>scm:git:git@github.com:Stratio/crossdata-connector-oracle.git</url>
+        <connection>https://github.com/Stratio/crossdata-connector-oracle/</connection>
     </scm>
 
     <properties>
-        <crossdata.version>0.1.1-SNAPSHOT</crossdata.version>
+        <crossdata.version>0.1.1</crossdata.version>
         <scala.version>2.10.4</scala.version>
         <akka.version>2.2.4</akka.version>
         <scala.dep.version>2.10</scala.dep.version>
@@ -170,7 +170,7 @@
                 <groupId>com.stratio.crossdata</groupId>
                 <version>${crossdata.version}</version>
                 <configuration>
-                    <mainClass>com.stratio.connector.skeleton.SkeletonConnector</mainClass>
+                    <mainClass>com.stratio.connector.oracle.OracleConnector</mainClass>
                     <jmxPort>7186</jmxPort>
                 </configuration>
             </plugin>
