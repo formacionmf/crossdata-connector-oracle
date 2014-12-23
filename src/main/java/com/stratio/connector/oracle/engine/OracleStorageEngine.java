@@ -24,15 +24,25 @@
 
 package com.stratio.connector.oracle.engine;
 
-import java.util.Collection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.*;
 
+import com.stratio.connector.oracle.statements.DeleteStatement;
+import com.stratio.connector.oracle.statements.InsertIntoStatement;
+import com.stratio.connector.oracle.statements.TruncateStatement;
+import com.stratio.connector.oracle.statements.UpdateTableStatement;
+import com.stratio.connector.oracle.utils.ColumnInsertOracle;
 import com.stratio.crossdata.common.connector.IStorageEngine;
 import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
+import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.logicalplan.Filter;
+import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Relation;
 
@@ -40,27 +50,116 @@ import com.stratio.crossdata.common.statements.structures.Relation;
  * Oracle storage engine.
  */
 public class OracleStorageEngine implements IStorageEngine{
+    private Map<String, Statement> sessions;
+    /**
+     * Basic Constructor.
+     *
+     * @param sessions Map with the sessions
+     */
+    public OracleStorageEngine(Map<String, Statement> sessions) {
+        this.sessions = sessions;
+    }
+
+    /**
+     * Insert method to a table.
+     *
+     * @param targetCluster The target cluster.
+     * @param targetTable   The target table.
+     * @param row           The inserted row.
+     * @throws ConnectorException
+     */
     @Override public void insert(ClusterName targetCluster, TableMetadata targetTable, Row row)
             throws ConnectorException {
-        throw new UnsupportedException("Method not implemented");
+        Statement session = sessions.get(targetCluster.getName());
+        String query = insertBlock(row, targetTable);
+        try {
+            session.execute(query);
+        } catch (SQLException e) {
+                e.printStackTrace();
+                throw new ConnectorException("ERROR: Insert row " + e.getMessage() +
+                        ". Error Code: " + ((SQLException) e).getErrorCode());
+        }
     }
 
     @Override public void insert(ClusterName targetCluster, TableMetadata targetTable, Collection<Row> rows)
             throws ConnectorException {
-        throw new UnsupportedException("Method not implemented");
+        Statement session = sessions.get(targetCluster.getName());
+        for (Row row : rows) {
+            String query = insertBlock(row, targetTable);
+            try {
+                session.execute(query);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                throw new ConnectorException("ERROR: Insert row " + e.getMessage() +
+                        ". Error Code: " + ((SQLException) e).getErrorCode());
+            }
+        }
+    }
+
+    private String insertBlock(Row row, TableMetadata targetTable) throws ExecutionException {
+        Set<String> keys = row.getCells().keySet();
+        Map<ColumnName, ColumnMetadata> columnsWithMetadata = targetTable.getColumns();
+        Map<String, ColumnInsertOracle> columnsMetadata = new HashMap<>();
+        try {
+            for (String key : keys) {
+                ColumnName col =
+                        new ColumnName(targetTable.getName().getCatalogName().getName(),
+                                targetTable.getName().getName(), key);
+                columnsMetadata.put(key,
+                        new ColumnInsertOracle(columnsWithMetadata.get(col).getColumnType(),
+                                row.getCell(key).toString(), key));
+            }
+        } catch (Exception e) {
+            throw new ExecutionException("Trying insert data in a not existing column", e);
+        }
+
+        InsertIntoStatement insertStatement =
+                new InsertIntoStatement(targetTable, columnsMetadata);
+        return insertStatement.toString();
     }
 
     @Override public void delete(ClusterName targetCluster, TableName tableName, Collection<Filter> whereClauses)
             throws ConnectorException {
-        throw new UnsupportedException("Method not implemented");
+        Statement session = sessions.get(targetCluster.getName());
+        List<Filter> whereFilters = new ArrayList<>();
+        for (Filter filter : whereClauses) {
+            whereFilters.add(filter);
+        }
+        DeleteStatement deleteStatement = new DeleteStatement(tableName, whereFilters);
+        String query = deleteStatement.toString();
+        try {
+            session.execute(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new ConnectorException("ERROR: Delete row " + e.getMessage() +
+                    ". Error Code: " + ((SQLException) e).getErrorCode());
+        }
     }
 
     @Override public void update(ClusterName targetCluster, TableName tableName, Collection<Relation> assignments,
             Collection<Filter> whereClauses) throws ConnectorException {
-        throw new UnsupportedException("Method not implemented");
+        Statement session = sessions.get(targetCluster.getName());
+        UpdateTableStatement updateStatement = new UpdateTableStatement(tableName, assignments, whereClauses);
+        String query = updateStatement.toString();
+        try {
+            session.execute(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new ConnectorException("ERROR: Update Table " + e.getMessage() +
+                    ". Error Code: " + ((SQLException) e).getErrorCode());
+        }
     }
 
     @Override public void truncate(ClusterName targetCluster, TableName tableName) throws ConnectorException {
-        throw new UnsupportedException("Method not implemented");
+        Statement session = sessions.get(targetCluster.getName());
+        TruncateStatement truncateStatement = new TruncateStatement(tableName);
+        String query = truncateStatement.toString();
+        try {
+            session.execute(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new ConnectorException("ERROR: Truncate Table " + e.getMessage() +
+                    ". Error Code: " + ((SQLException) e).getErrorCode());
+        }
     }
 }

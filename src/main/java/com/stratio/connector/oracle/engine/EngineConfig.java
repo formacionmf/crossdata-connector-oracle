@@ -24,7 +24,7 @@ public class EngineConfig {
      * Cluster Name.
      */
 
-    private String clusterName;
+    private String _sid;
     private ICredentials credentials;
 
     /**
@@ -68,17 +68,17 @@ public class EngineConfig {
      *
      * @return the cluster name.
      */
-    public String getClusterName() {
-        return clusterName;
+    public String getSID() {
+        return _sid;
     }
 
     /**
-     * Set com.stratio.connector.oracle.com.stratio.connector.oracle port.
+     * Set com.stratio.connector.oracle.com.stratio.connector.oracle sid.
      *
-     * @param clusterName .
+     * @param sid .
      */
-    public void setClusterName(String clusterName) {
-        this.clusterName = clusterName;
+    public void setSID(String sid) {
+        this._sid = sid;
     }
 
 

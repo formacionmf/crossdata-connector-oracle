@@ -60,6 +60,15 @@ public class OracleConnector implements IConnector{
      */
     private static final Logger LOG = Logger.getLogger(OracleConnector.class);
 
+    /**
+     * DEFAULT_LIMIT for the select queries.
+     */
+    private static final int DEFAULT_LIMIT = 100;
+    private static final int DEFAULT_LENGTH = 50;
+
+    private int defaultLength;
+    private int defaultLimit;
+
     private Map<String, Statement> sessions;
 
     @Override
@@ -85,6 +94,7 @@ public class OracleConnector implements IConnector{
 
         ClusterName clusterName = config.getName();
         Map<String, String> clusterOptions = config.getOptions();
+        Map<String, String> connectorOptions = config.getConnectorOptions();
 
         EngineConfig engineConfig = new EngineConfig();
 
@@ -92,6 +102,19 @@ public class OracleConnector implements IConnector{
                 clusterOptions.get("Host"));
         engineConfig.setOraclePort(Integer.parseInt(clusterOptions.get("Port")));
         engineConfig.setCredentials(credentials);
+
+        engineConfig.setSID(clusterOptions.get("SID"));
+
+        if (connectorOptions.get("DefaultLength") == null) {
+            defaultLength = DEFAULT_LENGTH;
+        } else {
+            defaultLength = Integer.parseInt(connectorOptions.get("DefaultLength"));
+        }
+        if (connectorOptions.get("DefaultLimit") == null) {
+            defaultLimit = DEFAULT_LIMIT;
+        } else {
+            defaultLimit = Integer.parseInt(connectorOptions.get("DefaultLimit"));
+        }
 
 
         Engine engine = new Engine(engineConfig);
@@ -145,18 +168,26 @@ public class OracleConnector implements IConnector{
 
     @Override
     public IStorageEngine getStorageEngine() throws UnsupportedException {
-        return new OracleStorageEngine();
+        return new OracleStorageEngine(sessions);
     }
 
     @Override
     public IQueryEngine getQueryEngine() throws UnsupportedException {
-        return new OracleQueryEngine();
+        return new OracleQueryEngine(sessions, defaultLimit);
     }
 
     @Override
     public IMetadataEngine getMetadataEngine() throws UnsupportedException {
-        return new OracleMetadataEngine();
+        return new OracleMetadataEngine(sessions,defaultLength);
     }
+
+    /**
+     * Constructor.
+     */
+    public OracleConnector() {
+        sessions = new HashMap<>();
+    }
+
 
     /**
      * Run a Oracle Connector using a {@link com.stratio.crossdata.connectors.ConnectorApp}.

@@ -17,7 +17,7 @@
             <Description>Oracle Port</Description>
         </Property>
         <Property>
-            <PropertyName>ClusterName</PropertyName>
+            <PropertyName>SID</PropertyName>
             <Description>Oracle SID</Description>
         </Property>
     </RequiredProperties>

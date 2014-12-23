@@ -58,7 +58,7 @@ public class Engine {
             connection = DriverManager.getConnection(
                     "jdbc:oracle:thin:@" + config.getOracleHost() +
                             ":" + config.getOraclePort() +
-                            ":" + config.getClusterName(),
+                            ":" + config.getSID(),
                             "SYSTEM",
                             "password");
 

@@ -12,25 +12,34 @@
 
     <!-- Define the set of required operations the user will be asked to input
     when attaching the connector -->
-    <!--
+
     <RequiredProperties>
         <Property>
-            <PropertyName>ConnectorProperty</PropertyName>
-            <Description>Property description</Description>
+            <PropertyName>DefaultLength</PropertyName>
+            <Description>It is necessary to indicate de default length for the varchar types</Description>
+        </Property>
+        <Property>
+            <PropertyName>DefaultLimit</PropertyName>
+            <Description>It is necessary to indicate de default length for the select statement</Description>
         </Property>
     </RequiredProperties>
-    -->
+
     <!-- Define the list of operations supported by the connector.
     Check crossdata/doc/ConnectorOperations.md for more information. -->
     <SupportedOperations>
-        <operation>CREATE_CATALOG</operation>
-        <operation>DROP_CATALOG</operation>
         <operation>CREATE_TABLE</operation>
+        <operation>ALTER_TABLE</operation>
         <operation>DROP_TABLE</operation>
+        <operation>CREATE_INDEX</operation>
+        <operation>DROP_INDEX</operation>
         <operation>INSERT</operation>
         <operation>PROJECT</operation>
         <operation>SELECT_OPERATOR</operation>
         <operation>SELECT_LIMIT</operation>
+        <operation>SELECT_ORDER_BY</operation>
         <operation>FILTER_PK_EQ</operation>
+        <operation>UPDATE_PK_EQ</operation>
+        <operation>DELETE_PK_EQ</operation>
+        <operation>TRUNCATE_TABLE</operation>
     </SupportedOperations>
 </Connector>

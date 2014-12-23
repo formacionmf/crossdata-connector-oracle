@@ -40,7 +40,7 @@
     </scm>
 
     <properties>
-        <crossdata.version>0.1.1</crossdata.version>
+        <crossdata.version>0.2.0-SNAPSHOT</crossdata.version>
         <scala.version>2.10.4</scala.version>
         <akka.version>2.2.4</akka.version>
         <scala.dep.version>2.10</scala.dep.version>
