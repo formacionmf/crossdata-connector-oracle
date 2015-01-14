@@ -39,6 +39,7 @@ import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ import java.util.Map;
  */
 public class OracleQueryEngine implements IQueryEngine{
     private static final int DEFAULT_LIMIT = 100;
-    private Map<ColumnName, String> aliasColumns = new HashMap<>();
+    private Map<Selector, String> aliasColumns = new HashMap<>();
     private List<OrderByClause> orderByColumns = new ArrayList<>();
     private Statement session = null;
     private List<ColumnName> selectionClause;
@@ -162,12 +163,12 @@ public class OracleQueryEngine implements IQueryEngine{
     @Override
     public void asyncExecute(String queryId, LogicalWorkflow workflow, IResultHandler resultHandler)
             throws ConnectorException {
-        throw new UnsupportedException("Method not implemented2");
+        throw new UnsupportedException("Async execute not supported yet.");
     }
 
     @Override
     public void stop(String queryId) throws ConnectorException {
-        throw new UnsupportedException("Method not implemented3");
+        throw new UnsupportedException("Stop for Async execute not supported yet.");
     }
 
     private String getOrderByClause() {
@@ -240,13 +241,17 @@ public class OracleQueryEngine implements IQueryEngine{
     private String getAliasClause() {
         StringBuilder sb = new StringBuilder();
         int i = 0;
-        for (Map.Entry<ColumnName,String> entry:aliasColumns.entrySet()) {
+        for (Map.Entry<Selector,String> entry:aliasColumns.entrySet()) {
             if (i != 0) {
                 sb.append(",");
             }
             i = 1;
-            sb.append(entry.getKey().getName());
+            sb.append(entry.getKey().getColumnName().getName());
         }
         return sb.toString();
+    }
+
+    public Statement getSession() {
+        return session;
     }
 }

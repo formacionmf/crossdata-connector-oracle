@@ -23,6 +23,7 @@ public class OracleMetadataHelper {
     private static Map<String, String> nativeODBCType = new HashMap<>();
     private static Map<ColumnType, String> dbType = new HashMap<>();
     private static Map<ColumnType, Class<?>> dbClass = new HashMap<>();
+    private static Map<String,ColumnType> dbType2 = new HashMap<>();
 
     static {
 
@@ -42,6 +43,25 @@ public class OracleMetadataHelper {
         dbType.put(ColumnType.TEXT, "TEXT");
         dbType.put(ColumnType.VARCHAR, "VARCHAR");
 
+
+        dbType2.put("BIGINT", ColumnType.BIGINT);
+        dbType2.put("SQL_BIGINT", ColumnType.BIGINT);
+        dbType2.put("BOOLEAN", ColumnType.BOOLEAN);
+        dbType2.put("DOUBLE", ColumnType.DOUBLE);
+        dbType2.put("SQL_DOUBLE", ColumnType.DOUBLE);
+        dbType2.put("FLOAT", ColumnType.FLOAT);
+        dbType2.put("SQL_FLOAT", ColumnType.FLOAT);
+        dbType2.put("INT", ColumnType.INT);
+        dbType2.put("SQL_INTEGER", ColumnType.INT);
+        dbType2.put("TEXT", ColumnType.TEXT);
+        dbType2.put("VARCHAR", ColumnType.VARCHAR);
+        dbType2.put("SQL_VARCHAR", ColumnType.VARCHAR);
+        dbType2.put("NUMBER", ColumnType.DOUBLE);
+        dbType2.put("VARCHAR2", ColumnType.VARCHAR);
+        dbType2.put("BINARY_DOUBLE", ColumnType.DOUBLE);
+        dbType2.put("BINARY_FLOAT", ColumnType.FLOAT);
+        dbType2.put("CHAR", ColumnType.VARCHAR);
+
     }
 
     /**
@@ -53,8 +73,8 @@ public class OracleMetadataHelper {
      * Class constructor.
      */
     public OracleMetadataHelper() {
-        for (Map.Entry<ColumnType, String> entry : dbType.entrySet()) {
-            typeMapping.put(entry.getValue(), entry.getKey());
+        for (Map.Entry<String,ColumnType> entry : dbType2.entrySet()) {
+            typeMapping.put(entry.getKey(), entry.getValue());
         }
     }
 
@@ -84,7 +104,6 @@ public class OracleMetadataHelper {
     }
 
     private Class<?> getJavaClass(String type) {
-        Object value;
         switch (type) {
             case "CHAR":
             case "VARCHAR":

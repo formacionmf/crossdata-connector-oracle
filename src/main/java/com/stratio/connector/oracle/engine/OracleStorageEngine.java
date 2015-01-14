@@ -68,7 +68,7 @@ public class OracleStorageEngine implements IStorageEngine{
      * @param row           The inserted row.
      * @throws ConnectorException
      */
-    @Override public void insert(ClusterName targetCluster, TableMetadata targetTable, Row row)
+    @Override public void insert(ClusterName targetCluster, TableMetadata targetTable, Row row, boolean isNotExists)
             throws ConnectorException {
         Statement session = sessions.get(targetCluster.getName());
         String query = insertBlock(row, targetTable);
@@ -81,7 +81,7 @@ public class OracleStorageEngine implements IStorageEngine{
         }
     }
 
-    @Override public void insert(ClusterName targetCluster, TableMetadata targetTable, Collection<Row> rows)
+    @Override public void insert(ClusterName targetCluster, TableMetadata targetTable, Collection<Row> rows, boolean isNotExists)
             throws ConnectorException {
         Statement session = sessions.get(targetCluster.getName());
         for (Row row : rows) {

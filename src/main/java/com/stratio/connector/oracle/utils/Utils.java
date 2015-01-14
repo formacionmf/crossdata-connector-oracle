@@ -12,6 +12,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
  * Created by carlos on 23/12/14.
@@ -34,7 +36,7 @@ public class Utils {
      */
     protected Cell getCell(String type, java.sql.ResultSet resultSet, String columnName) throws SQLException {
         Object value;
-        switch (type) {
+        switch (type.toUpperCase()) {
             case "CHAR":
             case "VARCHAR":
             case "LONGVARCHAR":
@@ -54,13 +56,12 @@ public class Utils {
             case "SMALLINT":
                 value=resultSet.getShort(columnName);
                 break;
+            case "INT":
             case "INTEGER":
                 value=resultSet.getInt(columnName);
                 break;
-            case "NUMBER":
-                value=resultSet.getLong(columnName);
-                break;
             case "BIGINT":
+            case "NUMBER":
                 value=resultSet.getLong(columnName);
                 break;
             case "REAL":
@@ -91,6 +92,9 @@ public class Utils {
                 value=resultSet.getBlob(columnName);
                 break;
             case "ARRAY":
+            case "SET":
+            case "LIST":
+            case "MAP":
                 value=resultSet.getArray(columnName);
                 break;
             case "DISTINCT":
@@ -129,28 +133,32 @@ public class Utils {
         List<ColumnMetadata> columnList = new ArrayList<>();
         ColumnMetadata columnMetadata = null;
         com.stratio.crossdata.common.data.Row crossdataRow = null;
-        for (int i = 0; i < numColumns; i++) {
+
+        for (int i = 1; i <= numColumns; i++) {
             try {
                 ColumnName columnName = new ColumnName(resultSetMetaData.getCatalogName(i),
                         resultSetMetaData.getTableName(i), resultSetMetaData.getColumnName(i));
                 ColumnType type = helper.toColumnType(resultSetMetaData.getColumnTypeName(i));
-                resultSetMetaData.getColumnType(i);
+
                 columnMetadata = new ColumnMetadata(columnName, null, type);
                 columnList.add(columnMetadata);
 
-                crossdataRow = new com.stratio.crossdata.common.data.Row();
-                Cell crossdataCell = getCell(resultSetMetaData.getColumnTypeName(i), resultSet,
-                        resultSetMetaData.getColumnName(i));
-                crossdataRow.addCell(resultSetMetaData.getColumnName(i), crossdataCell);
-                crossdataResult.add(crossdataRow);
             } catch (SQLException e) {
                 LOG.error("Cannot transform result set", e);
                 crossdataResult = new ResultSet();
             }
         }
+        while (resultSet.next()) {
+            crossdataRow = new com.stratio.crossdata.common.data.Row();
+            for(ColumnMetadata column:columnList) {
+                Cell crossdataCell = getCell(column.getColumnType().getCrossdataType(), resultSet,
+                        column.getName().getName());
+                crossdataRow.addCell(column.getName().getName(), crossdataCell);
+            }
+            crossdataResult.add(crossdataRow);
+        }
 
         crossdataResult.setColumnMetadata(columnList);
-
 
         return crossdataResult;
     }
@@ -163,13 +171,15 @@ public class Utils {
      * @param alias     The map with the relations between ColumnName and Alias.
      * @return An equivalent Meta ResultSet.
      */
-    public ResultSet transformToMetaResultSet(java.sql.ResultSet resultSet, Map<ColumnName, String> alias) {
+    public ResultSet transformToMetaResultSet(java.sql.ResultSet resultSet, Map<Selector, String> alias)
+            throws SQLException {
         ResultSet crossdataResult = new ResultSet();
 
         OracleMetadataHelper helper = new OracleMetadataHelper();
 
         //Get the columns in order
         ResultSetMetaData resultSetMetaData = null;
+
         int numColumns = 0;
         try {
             resultSetMetaData = resultSet.getMetaData();
@@ -184,45 +194,66 @@ public class Utils {
         com.stratio.crossdata.common.data.Row crossdataRow = null;
         for (int i = 1; i <= numColumns; i++) {
             try {
-                ColumnName columnName = new ColumnName(resultSetMetaData.getCatalogName(i),
-                        resultSetMetaData.getTableName(i), resultSetMetaData.getColumnName(i));
+//                ColumnName columnName = new ColumnName(resultSetMetaData.getCatalogName(i),
+//                        resultSetMetaData.getTableName(i), resultSetMetaData.getColumnName(i));
+                ColumnName columnName = new ColumnName("",
+                        "", resultSetMetaData.getColumnName(i));
                 ColumnType type = helper.toColumnType(resultSetMetaData.getColumnTypeName(i));
+//                if (alias
+//                        .containsKey(new ColumnSelector(new ColumnName(resultSetMetaData.getCatalogName(i),
+//                                resultSetMetaData.getTableName(i),
+//                                resultSetMetaData.getColumnName(i))))) {
                 if (alias
-                        .containsKey(new ColumnName(resultSetMetaData.getCatalogName(i),
-                                resultSetMetaData.getTableName(i),
-                                resultSetMetaData.getColumnName(i)))) {
+                        .containsKey(new ColumnSelector(new ColumnName("",
+                                "",
+                                resultSetMetaData.getColumnName(i))))) {
                     columnMetadata = new ColumnMetadata(columnName, null, type);
                     columnMetadata.getName()
-                            .setAlias(alias.get(new ColumnName(resultSetMetaData.getCatalogName(i),
-                                    resultSetMetaData.getTableName(i),
-                                    resultSetMetaData.getColumnName(i))));
+                            .setAlias(alias.get(new ColumnSelector(new ColumnName("",
+                                    "",
+                                    resultSetMetaData.getColumnName(i)))));
+//                    columnMetadata.getName()
+//                            .setAlias(alias.get(new ColumnSelector(new ColumnName(resultSetMetaData.getCatalogName(i),
+//                                    resultSetMetaData.getTableName(i),
+//                                    resultSetMetaData.getColumnName(i)))));
                 } else {
                     columnMetadata = new ColumnMetadata(columnName, null, type);
                 }
                 columnList.add(columnMetadata);
-
-                crossdataRow = new com.stratio.crossdata.common.data.Row();
-                if (alias
-                        .containsKey(new ColumnName(resultSetMetaData.getCatalogName(i),
-                                resultSetMetaData.getTableName(i),
-                                resultSetMetaData.getColumnName(i)))) {
-                    Cell crossdataCell = getCell(resultSetMetaData.getColumnTypeName(i), resultSet,
-                            resultSetMetaData.getColumnName(i));
-                    crossdataRow.addCell(alias
-                            .get(new ColumnName(resultSetMetaData.getCatalogName(i),
-                                    resultSetMetaData.getTableName(i),
-                                    resultSetMetaData.getColumnName(i))), crossdataCell);
-                } else {
-                    Cell crossdataCell = getCell(resultSetMetaData.getColumnTypeName(i), resultSet,
-                            resultSetMetaData.getColumnName(i));
-                    crossdataRow.addCell(resultSetMetaData.getColumnName(i), crossdataCell);
-                }
-
-                crossdataResult.add(crossdataRow);
             } catch (SQLException e) {
                 LOG.error("Cannot transform result set", e);
                 crossdataResult = new ResultSet();
             }
+        }
+
+        while (resultSet.next()) {
+            crossdataRow = new com.stratio.crossdata.common.data.Row();
+            for(ColumnMetadata column:columnList) {
+
+
+//                if (alias
+//                        .containsKey(new ColumnSelector(new ColumnName(column.getName().getTableName().getCatalogName
+//                                ().getName(), column.getName().getTableName().getName(),
+//                                column.getName().getName())))) {
+                if (alias
+                        .containsKey(new ColumnSelector(new ColumnName("", "",
+                                column.getName().getName())))) {
+                    Cell crossdataCell = getCell(column.getColumnType().getCrossdataType(), resultSet,
+                            column.getName().getName());
+                    crossdataRow.addCell(alias
+                            .get(new ColumnSelector(new ColumnName("", "",
+                                    column.getName().getName()))), crossdataCell);
+//                    crossdataRow.addCell(alias
+//                            .get(new ColumnSelector(new ColumnName(column.getName().getTableName().getCatalogName
+//                                    ().getName(), column.getName().getTableName().getName(),
+//                                    column.getName().getName()))), crossdataCell);
+                } else {
+                    Cell crossdataCell = getCell(column.getColumnType().getCrossdataType(), resultSet,
+                            column.getName().getName());
+                    crossdataRow.addCell(column.getName().getName(), crossdataCell);
+                }
+            }
+            crossdataResult.add(crossdataRow);
         }
         crossdataResult.setColumnMetadata(columnList);
 

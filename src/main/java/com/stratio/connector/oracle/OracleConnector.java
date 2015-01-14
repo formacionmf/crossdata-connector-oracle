@@ -25,6 +25,7 @@
 package com.stratio.connector.oracle;
 
 import com.stratio.connector.oracle.engine.*;
+import com.stratio.crossdata.common.metadata.IMetadata;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
@@ -136,14 +137,16 @@ public class OracleConnector implements IConnector{
     }
 
     @Override public void shutdown() throws ExecutionException {
+
         for (Statement s : sessions.values()) {
+
             try {
                 s.close();
-            } catch (SQLException e) {
-                LOG.info("ERROR oracle session");
-                e.printStackTrace();
+            } catch (SQLException e1) {
+                throw new ExecutionException(e1.getMessage());
             }
         }
+
         sessions = new HashMap<>();
     }
 
@@ -179,6 +182,11 @@ public class OracleConnector implements IConnector{
     @Override
     public IMetadataEngine getMetadataEngine() throws UnsupportedException {
         return new OracleMetadataEngine(sessions,defaultLength);
+    }
+
+    @Override
+    public boolean updateMetadata(IMetadata metadata) {
+        return false;
     }
 
     /**

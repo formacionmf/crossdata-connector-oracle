@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Map;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
  * Created by carlos on 23/12/14.
@@ -63,11 +64,10 @@ public final class OracleExecutor {
      * @return a {@link com.stratio.crossdata.common.result.Result}.
      */
     public static com.stratio.crossdata.common.result.Result execute(String query,
-                                                                     Map<ColumnName, String> aliasColumns, Statement session)
+                                                                     Map<Selector, String> aliasColumns, Statement session)
             throws ConnectorException {
         try {
             ResultSet resultSet = session.executeQuery(query);
-            resultSet.next();
             return com.stratio.crossdata.common.result
                     .QueryResult
                     .createQueryResult(utils.transformToMetaResultSet(resultSet, aliasColumns));
