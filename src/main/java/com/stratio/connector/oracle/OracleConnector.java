@@ -43,12 +43,14 @@ import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.connectors.ConnectorApp;
 
 import javax.swing.plaf.nimbus.State;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 /**
  * Connector main class that launches the connector actor wrapper and implements the
@@ -70,7 +72,7 @@ public class OracleConnector implements IConnector{
     private int defaultLength;
     private int defaultLimit;
 
-    private Map<String, Statement> sessions;
+    private Map<String, Connection> sessions;
 
     @Override
     public String getConnectorName() {
@@ -100,11 +102,14 @@ public class OracleConnector implements IConnector{
         EngineConfig engineConfig = new EngineConfig();
 
         engineConfig.setOracleHost(
-                clusterOptions.get("Host"));
+                clusterOptions.get("Hosts"));
         engineConfig.setOraclePort(Integer.parseInt(clusterOptions.get("Port")));
         engineConfig.setCredentials(credentials);
 
         engineConfig.setSID(clusterOptions.get("SID"));
+        engineConfig.setDriverClass(clusterOptions.get("driverClass"));
+        engineConfig.setUserBBDD(clusterOptions.get("user"));
+        engineConfig.setPasswordBBDD(clusterOptions.get("password"));
 
         if (connectorOptions.get("DefaultLength") == null) {
             defaultLength = DEFAULT_LENGTH;
@@ -118,9 +123,16 @@ public class OracleConnector implements IConnector{
         }
 
 
-        Engine engine = new Engine(engineConfig);
+        Engine engine = null;
+        try {
+            engine = new Engine(engineConfig);
+            LOG.info("Oracle session created.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            LOG.info("Oracle session NO created." + e.getMessage());
+        }
 
-        LOG.info("Oracle session created.");
+
 
         sessions.put(clusterName.getName(), engine.getSession());
     }
@@ -138,7 +150,7 @@ public class OracleConnector implements IConnector{
 
     @Override public void shutdown() throws ExecutionException {
 
-        for (Statement s : sessions.values()) {
+        for (Connection s : sessions.values()) {
 
             try {
                 s.close();
@@ -182,11 +194,6 @@ public class OracleConnector implements IConnector{
     @Override
     public IMetadataEngine getMetadataEngine() throws UnsupportedException {
         return new OracleMetadataEngine(sessions,defaultLength);
-    }
-
-    @Override
-    public boolean updateMetadata(IMetadata metadata) {
-        return false;
     }
 
     /**

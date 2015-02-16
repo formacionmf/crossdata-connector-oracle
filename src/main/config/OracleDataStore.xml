@@ -9,7 +9,7 @@
     a cluster of this datastore. -->
     <RequiredProperties>
         <Property>
-            <PropertyName>Host</PropertyName>
+            <PropertyName>Hosts</PropertyName>
             <Description>Oracle Host</Description>
         </Property>
         <Property>
@@ -19,6 +19,22 @@
         <Property>
             <PropertyName>SID</PropertyName>
             <Description>Oracle SID</Description>
+        </Property>
+        <Property>
+            <PropertyName>user</PropertyName>
+            <Description>Oracle User</Description>
+        </Property>
+        <Property>
+            <PropertyName>password</PropertyName>
+            <Description>Oracle Password</Description>
+        </Property>
+        <Property>
+            <PropertyName>driverClass</PropertyName>
+            <Description>Oracle driver class</Description>
+        </Property>
+        <Property>
+            <PropertyName>connectionUrl</PropertyName>
+            <Description>Oracle connectionUrl</Description>
         </Property>
     </RequiredProperties>
     <!-- List of datastore behaviours -->

@@ -40,7 +40,7 @@
     </scm>
 
     <properties>
-        <crossdata.version>0.2.0-SNAPSHOT</crossdata.version>
+        <crossdata.version>0.3.0-SNAPSHOT</crossdata.version>
         <scala.version>2.10.4</scala.version>
         <akka.version>2.3.4</akka.version>
         <scala.dep.version>2.10</scala.dep.version>
@@ -113,6 +113,14 @@
             <version>1.2.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>ojdbc7</artifactId>
+            <version>12.1.0.2</version>
+        </dependency>
+
+
+
     </dependencies>
 
     <build>
@@ -173,6 +181,33 @@
                     <mainClass>com.stratio.connector.oracle.OracleConnector</mainClass>
                     <jmxPort>7186</jmxPort>
                 </configuration>
+            </plugin>
+            <!-- Bind the maven-assembly-plugin to the package phase this will create
+                   a jar file without the storm dependencies suitable for deployment to a cluster. -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <finalName>crossdata-connector-oracle-1.0.0</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <archive>
+                        <manifest>
+                            <mainClass></mainClass>
+                        </manifest>
+                    </archive>
+                    <outputDirectory>/home/carlos/Proyecto</outputDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
         </plugins>

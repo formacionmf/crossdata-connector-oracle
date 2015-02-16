@@ -7,11 +7,15 @@ import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import org.apache.log4j.Logger;
 
+import java.beans.Statement;
+import java.sql.Connection;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
+
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
@@ -259,4 +263,40 @@ public class Utils {
 
         return crossdataResult;
     }
+
+    /**
+     * Get the Crossdata ColumnType from Cassandra DataType
+     * @param type The Oracle of the column.
+     * @return A {@link com.stratio.crossdata.common.metadata.ColumnType}
+     */
+    public ColumnType getCrossdataColumn(String type) {
+        switch(type){
+            case "VARCHAR2":
+            case "VARCHAR":
+            case "NVARCHAR2":
+            case "CHAR":
+            case "NCHAR":
+                return ColumnType.TEXT;
+            case "LONG":
+            case "NUMBER":
+                return ColumnType.BIGINT;
+            case "FLOAT":
+            case "BINARY_FLOAT":
+                return ColumnType.FLOAT;
+            case "BINARY_DOUBLE":
+                return ColumnType.DOUBLE;
+            case "DATE":
+                return ColumnType.NATIVE;
+            default:
+                return null;
+        }
+
+    }
+
+    public static final Semaphore semaphore = new Semaphore(1);
+
+    public static java.sql.Statement createStatement(Connection con) throws SQLException {
+        return  con.createStatement();
+    }
+
 }

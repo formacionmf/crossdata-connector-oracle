@@ -1,5 +1,6 @@
 package com.stratio.connector.oracle.engine;
 
+import com.stratio.crossdata.common.exceptions.ExecutionException;
 import org.apache.log4j.Logger;
 
 import java.sql.*;
@@ -16,14 +17,14 @@ public class Engine {
     /**
      * Oracle Java Driver session.
      */
-    private final Statement session;
+    private final Connection session;
 
     /**
      * Class constructor.
      *
      * @param config The {@link com.stratio.connector.oracle.engine.EngineConfig}.
      */
-    public Engine(EngineConfig config) {
+    public Engine(EngineConfig config) throws SQLException {
         this.session = initializeDB(config);
     }
 
@@ -33,14 +34,14 @@ public class Engine {
      * @param config The {@link com.stratio.connector.oracle.engine.EngineConfig}.
      * @return A new Session.
      */
-    private Statement initializeDB(EngineConfig config) {
+    private Connection initializeDB(EngineConfig config) throws SQLException {
 
         //conexión a BBDD
         LOG.info("-------- Oracle JDBC Connection Testing ------");
 
         try {
 
-            Class.forName("oracle.jdbc.driver.OracleDriver");
+            Class.forName(config.getDriverClass());
 
         } catch (ClassNotFoundException e) {
 
@@ -59,8 +60,8 @@ public class Engine {
                     "jdbc:oracle:thin:@" + config.getOracleHost() +
                             ":" + config.getOraclePort() +
                             ":" + config.getSID(),
-                            "SYSTEM",
-                            "password");
+                            config.getUserBBDD(),  // SYSTEM
+                            config.getPasswordBBDD()); //password
 
         } catch (SQLException e) {
 
@@ -79,10 +80,12 @@ public class Engine {
             } catch (SQLException e) {
                 LOG.error("Statement Failed! Check output console");
                 e.printStackTrace();
+            } finally {
+                stmt.close();
             }
         }
 
-        return stmt;
+        return connection;
 
     }
 
@@ -100,7 +103,7 @@ public class Engine {
 
     }
 
-    public Statement getSession() {
+    public Connection getSession() {
         return session;
     }
 }

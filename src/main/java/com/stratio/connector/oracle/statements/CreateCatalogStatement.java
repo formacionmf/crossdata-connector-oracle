@@ -20,9 +20,9 @@ public class CreateCatalogStatement {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("SELECT * FROM USER_USERS WHERE USERNAME = '");
+        StringBuilder sb = new StringBuilder("SELECT * FROM ALL_USERS WHERE USERNAME = '");
 
-        sb.append(catalog);
+        sb.append(catalog.toUpperCase());
         sb.append("'");
 
         return sb.toString();

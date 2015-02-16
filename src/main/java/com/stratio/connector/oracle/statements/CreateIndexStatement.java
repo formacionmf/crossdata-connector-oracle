@@ -6,6 +6,7 @@ import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 
+import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Map;
 
@@ -42,7 +43,7 @@ public class CreateIndexStatement {
      * @throws com.stratio.crossdata.common.exceptions.ExecutionException
      */
     public CreateIndexStatement(IndexMetadata indexMetadata, boolean createIfNotExists,
-                                Statement session)
+                                Connection session)
             throws ExecutionException {
         this.targetColumns = indexMetadata.getColumns();
         this.createIfNotExists = createIfNotExists;

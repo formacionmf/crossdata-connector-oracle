@@ -24,7 +24,10 @@ public class EngineConfig {
      * Cluster Name.
      */
 
+    private String driverClass;
     private String _sid;
+    private String _userBBDD;
+    private String _passwordBBDD;
     private ICredentials credentials;
 
     /**
@@ -63,6 +66,29 @@ public class EngineConfig {
         this.oraclePort = oraclePort;
     }
 
+
+    /**
+     * Get com.stratio.connector.oracle.com.stratio.connector.oracle driverClass.
+     *
+     * @return current com.stratio.connector.oracle.com.stratio.connector.oracle driverClass.
+     */
+    public String getDriverClass() {
+        return driverClass;
+    }
+
+    /**
+     * Set com.stratio.connector.oracle.com.stratio.connector.oracle driverClass.
+     *
+     * @param driverClass Driver of com.stratio.connector.oracle.com.stratio.connector.oracle (CQL).
+     */
+    public void setDriverClass(String driverClass) {
+        this.driverClass = driverClass;
+    }
+
+
+
+
+
     /**
      * Get com.stratio.connector.oracle.com.stratio.connector.oracle cluster name.
      *
@@ -80,6 +106,45 @@ public class EngineConfig {
     public void setSID(String sid) {
         this._sid = sid;
     }
+
+
+    /**
+     * Get com.stratio.connector.oracle.com.stratio.connector.oracle cluster name.
+     *
+     * @return the user BBDD.
+     */
+    public String getUserBBDD() {
+        return _userBBDD;
+    }
+
+    /**
+     * Set com.stratio.connector.oracle.com.stratio.connector.oracle sid.
+     *
+     * @param userBBDD .
+     */
+    public void setUserBBDD(String userBBDD) {
+        this._userBBDD = userBBDD;
+    }
+
+
+    /**
+     * Get com.stratio.connector.oracle.com.stratio.connector.oracle cluster name.
+     *
+     * @return the user BBDD.
+     */
+    public String getPasswordBBDD() {
+        return _passwordBBDD;
+    }
+
+    /**
+     * Set com.stratio.connector.oracle.com.stratio.connector.oracle sid.
+     *
+     * @param passwordBBDD .
+     */
+    public void setPasswordBBDD(String passwordBBDD) {
+        this._passwordBBDD = passwordBBDD;
+    }
+
 
 
 //    public String getRandomCassandraHost() {

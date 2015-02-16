@@ -24,15 +24,18 @@
 
 package com.stratio.connector.oracle.engine;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
+import akka.io.Tcp;
 import com.stratio.connector.oracle.statements.DeleteStatement;
 import com.stratio.connector.oracle.statements.InsertIntoStatement;
 import com.stratio.connector.oracle.statements.TruncateStatement;
 import com.stratio.connector.oracle.statements.UpdateTableStatement;
 import com.stratio.connector.oracle.utils.ColumnInsertOracle;
+import com.stratio.connector.oracle.utils.Utils;
 import com.stratio.crossdata.common.connector.IStorageEngine;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -46,17 +49,20 @@ import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Relation;
 
+import javax.rmi.CORBA.Util;
+import javax.swing.plaf.nimbus.State;
+
 /**
  * Oracle storage engine.
  */
 public class OracleStorageEngine implements IStorageEngine{
-    private Map<String, Statement> sessions;
+    private Map<String, Connection> sessions;
     /**
      * Basic Constructor.
      *
      * @param sessions Map with the sessions
      */
-    public OracleStorageEngine(Map<String, Statement> sessions) {
+    public OracleStorageEngine(Map<String, Connection> sessions) {
         this.sessions = sessions;
     }
 
@@ -70,28 +76,42 @@ public class OracleStorageEngine implements IStorageEngine{
      */
     @Override public void insert(ClusterName targetCluster, TableMetadata targetTable, Row row, boolean isNotExists)
             throws ConnectorException {
-        Statement session = sessions.get(targetCluster.getName());
+        Connection session = sessions.get(targetCluster.getName());
         String query = insertBlock(row, targetTable);
         try {
-            session.execute(query);
+            Statement st = Utils.createStatement(session);
+            try {
+                st.execute(query);
+            } catch (SQLException e) {
+                    e.printStackTrace();
+                    throw new ConnectorException("ERROR: Insert row " + e.getMessage() +
+                            ". Error Code: " + ((SQLException) e).getErrorCode());
+            } finally {
+                st.close();
+            }
         } catch (SQLException e) {
-                e.printStackTrace();
-                throw new ConnectorException("ERROR: Insert row " + e.getMessage() +
-                        ". Error Code: " + ((SQLException) e).getErrorCode());
+            e.printStackTrace();
         }
     }
 
     @Override public void insert(ClusterName targetCluster, TableMetadata targetTable, Collection<Row> rows, boolean isNotExists)
             throws ConnectorException {
-        Statement session = sessions.get(targetCluster.getName());
+        Connection session = sessions.get(targetCluster.getName());
         for (Row row : rows) {
             String query = insertBlock(row, targetTable);
             try {
-                session.execute(query);
+                Statement st = Utils.createStatement(session);
+                try {
+                    st.execute(query);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    throw new ConnectorException("ERROR: Insert row " + e.getMessage() +
+                            ". Error Code: " + ((SQLException) e).getErrorCode());
+                } finally {
+                    st.close();
+                }
             } catch (SQLException e) {
                 e.printStackTrace();
-                throw new ConnectorException("ERROR: Insert row " + e.getMessage() +
-                        ". Error Code: " + ((SQLException) e).getErrorCode());
             }
         }
     }
@@ -120,7 +140,7 @@ public class OracleStorageEngine implements IStorageEngine{
 
     @Override public void delete(ClusterName targetCluster, TableName tableName, Collection<Filter> whereClauses)
             throws ConnectorException {
-        Statement session = sessions.get(targetCluster.getName());
+        Connection session = sessions.get(targetCluster.getName());
         List<Filter> whereFilters = new ArrayList<>();
         for (Filter filter : whereClauses) {
             whereFilters.add(filter);
@@ -128,38 +148,57 @@ public class OracleStorageEngine implements IStorageEngine{
         DeleteStatement deleteStatement = new DeleteStatement(tableName, whereFilters);
         String query = deleteStatement.toString();
         try {
-            session.execute(query);
+            Statement st = Utils.createStatement(session);
+            try {
+                st.execute(query);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                throw new ConnectorException("ERROR: Delete row " + e.getMessage() +
+                        ". Error Code: " + ((SQLException) e).getErrorCode());
+            } finally {
+                st.close();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new ConnectorException("ERROR: Delete row " + e.getMessage() +
-                    ". Error Code: " + ((SQLException) e).getErrorCode());
         }
     }
 
     @Override public void update(ClusterName targetCluster, TableName tableName, Collection<Relation> assignments,
             Collection<Filter> whereClauses) throws ConnectorException {
-        Statement session = sessions.get(targetCluster.getName());
+        Connection session = sessions.get(targetCluster.getName());
         UpdateTableStatement updateStatement = new UpdateTableStatement(tableName, assignments, whereClauses);
         String query = updateStatement.toString();
         try {
-            session.execute(query);
+            Statement st = Utils.createStatement(session);
+            try {
+                st.execute(query);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                throw new ConnectorException("ERROR: Update Table " + e.getMessage() +
+                        ". Error Code: " + ((SQLException) e).getErrorCode());
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new ConnectorException("ERROR: Update Table " + e.getMessage() +
-                    ". Error Code: " + ((SQLException) e).getErrorCode());
         }
     }
 
     @Override public void truncate(ClusterName targetCluster, TableName tableName) throws ConnectorException {
-        Statement session = sessions.get(targetCluster.getName());
+        Connection session = sessions.get(targetCluster.getName());
         TruncateStatement truncateStatement = new TruncateStatement(tableName);
         String query = truncateStatement.toString();
         try {
-            session.execute(query);
+            Statement st = Utils.createStatement(session);
+            try {
+                st.execute(query);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                throw new ConnectorException("ERROR: Truncate Table " + e.getMessage() +
+                        ". Error Code: " + ((SQLException) e).getErrorCode());
+            } finally {
+                st.close();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new ConnectorException("ERROR: Truncate Table " + e.getMessage() +
-                    ". Error Code: " + ((SQLException) e).getErrorCode());
         }
     }
 }

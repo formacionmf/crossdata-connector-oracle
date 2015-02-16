@@ -24,7 +24,9 @@
 
 package com.stratio.connector.oracle.engine;
 
+import com.stratio.connector.oracle.OracleExecutor;
 import com.stratio.connector.oracle.statements.*;
+import com.stratio.connector.oracle.utils.Utils;
 import com.stratio.crossdata.common.connector.IMetadataEngine;
 import com.stratio.crossdata.common.data.*;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
@@ -37,7 +39,9 @@ import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.common.utils.StringUtils;
+import jline.internal.Log;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
@@ -49,8 +53,8 @@ import java.util.Map;
  */
 public class OracleMetadataEngine implements IMetadataEngine{
 
-    private Map<String, Statement> sessions;
-    private Statement session = null;
+    private Map<String, Connection> sessions;
+    private Connection session = null;
     private int defaultLength = 50;
 
     /**
@@ -58,7 +62,7 @@ public class OracleMetadataEngine implements IMetadataEngine{
      *
      * @param sessions The map of sessions that affect the queries.
      */
-    public OracleMetadataEngine(Map<String, Statement> sessions, int defaultLength) {
+    public OracleMetadataEngine(Map<String, Connection> sessions, int defaultLength) {
         this.sessions = sessions;
         this.defaultLength = defaultLength;
     }
@@ -77,14 +81,21 @@ public class OracleMetadataEngine implements IMetadataEngine{
                 new CreateCatalogStatement(catalogName);
 
         try {
-            java.sql.ResultSet rs = session.executeQuery(catalogStatement.toString());
-            rowCount = rs.last() ? rs.getRow() : 0;
+            Statement st = Utils.createStatement(session);
+            try {
+                java.sql.ResultSet rs = st.executeQuery(catalogStatement.toString());
+                rowCount = rs.last() ? rs.getRow() : 0;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                throw new ConnectorException("ERROR: Create Catalog " + e.getMessage());
+            } finally {
+                st.close();
+            }
+            if (rowCount == 0){
+                throw new ExecutionException("ERROR: Catalog does not exists");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new ConnectorException("ERROR: Create Catalog " + e.getMessage());
-        }
-        if (rowCount == 0){
-            throw new ExecutionException("ERROR: Catalog does not exists");
         }
 
 
@@ -111,14 +122,21 @@ public class OracleMetadataEngine implements IMetadataEngine{
                 new CreateTableStatement(tableMetadata, primaryKey,
                         textoptions,defaultLength);
         try {
-            session.execute(tableStatement.toString());
-        } catch (SQLException e) {
-            if (((SQLException)e).getErrorCode() != 955) //ORA-955 -> Tabla ya existe
-            {
-                e.printStackTrace();
-                throw new ConnectorException("ERROR: Create Table " + e.getMessage() +
-                        ". Error Code: " + ((SQLException) e).getErrorCode());
+            Statement st = Utils.createStatement(session);
+            try {
+                st.execute(tableStatement.toString());
+            } catch (SQLException e) {
+                if (((SQLException)e).getErrorCode() != 955) //ORA-955 -> Tabla ya existe
+                {
+                    e.printStackTrace();
+                    throw new ConnectorException("ERROR: Create Table " + e.getMessage() +
+                            ". Error Code: " + ((SQLException) e).getErrorCode());
+                }
+            } finally {
+                st.close();
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -164,14 +182,21 @@ public class OracleMetadataEngine implements IMetadataEngine{
         session = sessions.get(targetCluster.getName());
         DropTableStatement tableStatement = new DropTableStatement(name.getQualifiedName());
         try {
-            session.execute(tableStatement.toString());
-        } catch (SQLException e) {
-            if (((SQLException)e).getErrorCode() != 942) //ORA-942 -> Tabla no existe en BBDD
-            {
-                e.printStackTrace();
-                throw new ConnectorException("ERROR: Drop Table " + e.getMessage() +
-                        ". Error Code: " + ((SQLException) e).getErrorCode());
+            Statement st = Utils.createStatement(session);
+            try {
+                st.execute(tableStatement.toString());
+            } catch (SQLException e) {
+                if (((SQLException)e).getErrorCode() != 942) //ORA-942 -> Tabla no existe en BBDD
+                {
+                    e.printStackTrace();
+                    throw new ConnectorException("ERROR: Drop Table " + e.getMessage() +
+                            ". Error Code: " + ((SQLException) e).getErrorCode());
+                }
+            } finally {
+                st.close();
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -188,10 +213,17 @@ public class OracleMetadataEngine implements IMetadataEngine{
                 tableStatement = new AlterTableStatement(name, alterOptions.getColumnMetadata().getName()
                         , type, alterOptions.getOption(),defaultLength);
                 try {
-                    session.execute(tableStatement.toString());
+                    Statement st = Utils.createStatement(session);
+                    try {
+                        st.execute(tableStatement.toString());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        throw new ConnectorException("ERROR: Alter Table " + e.getMessage());
+                    } finally {
+                        st.close();
+                    }
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    throw new ConnectorException("ERROR: Alter Table " + e.getMessage());
                 }
                 break;
             default:
@@ -206,14 +238,21 @@ public class OracleMetadataEngine implements IMetadataEngine{
         CreateIndexStatement indexStatement =
                 new CreateIndexStatement(indexMetadata, true, session);
         try {
-            session.execute(indexStatement.toString());
-        } catch (SQLException e) {
-            if (((SQLException)e).getErrorCode() != 955) //ORA-955 -> Indice ya existe
-            {
-                e.printStackTrace();
-                throw new ConnectorException("ERROR: Create Index " + e.getMessage() +
-                        ". Error Code: " + ((SQLException) e).getErrorCode());
+            Statement st = Utils.createStatement(session);
+            try {
+                st.execute(indexStatement.toString());
+            } catch (SQLException e) {
+                if (((SQLException)e).getErrorCode() != 955) //ORA-955 -> Indice ya existe
+                {
+                    e.printStackTrace();
+                    throw new ConnectorException("ERROR: Create Index " + e.getMessage() +
+                            ". Error Code: " + ((SQLException) e).getErrorCode());
+                }
+            } finally {
+                st.close();
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -223,29 +262,81 @@ public class OracleMetadataEngine implements IMetadataEngine{
         DropIndexStatement indexStatement = new DropIndexStatement(indexName, true);
 
         try {
-            session.execute(indexStatement.toString());
-        } catch (SQLException e) {
-            if (((SQLException)e).getErrorCode() != 1418) //ORA-1418 -> Indice no existe
-            {
-                e.printStackTrace();
-                throw new ConnectorException("ERROR: Drop Index " + e.getMessage() +
-                        ". Error Code: " + ((SQLException) e).getErrorCode());
+            Statement st = Utils.createStatement(session);
+            try {
+                st.execute(indexStatement.toString());
+            } catch (SQLException e) {
+                if (((SQLException)e).getErrorCode() != 1418) //ORA-1418 -> Indice no existe
+                {
+                    e.printStackTrace();
+                    throw new ConnectorException("ERROR: Drop Index " + e.getMessage() +
+                            ". Error Code: " + ((SQLException) e).getErrorCode());
+                }
+            } finally {
+                st.close();
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
     @Override
     public List<CatalogMetadata> provideMetadata(ClusterName clusterName) throws ConnectorException {
-        return null;
+        session = sessions.get(clusterName.getName());
+        List<CatalogMetadata> ret = null;
+        try {
+            Statement st = Utils.createStatement(session);
+            try {
+                ret = OracleExecutor.getKeyspaces(st, clusterName.getName());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Log.info("ERROR. " + e.getMessage());
+            } finally {
+                st.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ret;
     }
 
     @Override
     public CatalogMetadata provideCatalogMetadata(ClusterName clusterName, CatalogName catalogName) throws ConnectorException {
-        return null;
+        session = sessions.get(clusterName.getName());
+        CatalogMetadata ret = null;
+        try {
+            Statement st = Utils.createStatement(session);
+            try {
+                ret= OracleExecutor.getKeyspacesByName(st,catalogName,clusterName.getName());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Log.info("ERROR. " + e.getMessage());
+            } finally {
+                st.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ret;
     }
 
     @Override
     public TableMetadata provideTableMetadata(ClusterName clusterName, TableName tableName) throws ConnectorException {
-        return null;
+        session=sessions.get(clusterName.getName());
+        TableMetadata ret = null;
+        try {
+            Statement st = Utils.createStatement(session);
+            try {
+                ret = OracleExecutor.getTablesByTableName(st, tableName,clusterName.getName());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Log.info("ERROR. " + e.getMessage());
+            } finally {
+                st.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ret;
     }
 }

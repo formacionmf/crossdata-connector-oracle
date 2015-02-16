@@ -38,6 +38,11 @@
         <operation>SELECT_LIMIT</operation>
         <operation>SELECT_ORDER_BY</operation>
         <operation>FILTER_PK_EQ</operation>
+        <operation>FILTER_NON_INDEXED_EQ</operation>
+        <operation>FILTER_NON_INDEXED_GT</operation>
+        <operation>FILTER_NON_INDEXED_LT</operation>
+        <operation>FILTER_NON_INDEXED_LET</operation>
+        <operation>FILTER_NON_INDEXED_GET</operation>
         <operation>UPDATE_PK_EQ</operation>
         <operation>UPDATE_NON_INDEXED_EQ</operation>
         <operation>UPDATE_PK_LT</operation>
@@ -50,5 +55,6 @@
         <operation>UPDATE_NON_INDEXED_LET</operation>
         <operation>DELETE_PK_EQ</operation>
         <operation>TRUNCATE_TABLE</operation>
+        <operation>IMPORT_METADATA</operation>
     </SupportedOperations>
 </Connector>

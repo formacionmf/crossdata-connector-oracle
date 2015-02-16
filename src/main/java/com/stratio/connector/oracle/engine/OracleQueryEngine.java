@@ -41,6 +41,8 @@ import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,7 +56,7 @@ public class OracleQueryEngine implements IQueryEngine{
     private static final int DEFAULT_LIMIT = 100;
     private Map<Selector, String> aliasColumns = new HashMap<>();
     private List<OrderByClause> orderByColumns = new ArrayList<>();
-    private Statement session = null;
+    private Connection session = null;
     private List<ColumnName> selectionClause;
     private boolean catalogInc;
     private String catalog;
@@ -63,14 +65,14 @@ public class OracleQueryEngine implements IQueryEngine{
     private boolean limitInc = true;
     private List<Relation> where = new ArrayList<>();
     private int limit = DEFAULT_LIMIT;
-    private Map<String, Statement> sessions;
+    private Map<String, Connection> sessions;
 
     /**
      * Basic constructor.
      * @param sessions Map of sessions.
      * @param limitDefault Default limit for a query.
      */
-    public OracleQueryEngine(Map<String, Statement> sessions, int limitDefault) {
+    public OracleQueryEngine(Map<String, Connection> sessions, int limitDefault) {
         this.sessions = sessions;
         this.limit = limitDefault;
     }
@@ -90,7 +92,12 @@ public class OracleQueryEngine implements IQueryEngine{
         Result result;
         if (session != null) {
             if (aliasColumns.isEmpty()) {
-                result = OracleExecutor.execute(query, session);
+                try {
+                    result = OracleExecutor.execute(query, session);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    throw new ExecutionException("No session to cluster established" + e.getMessage());
+                }
             } else {
                 result = OracleExecutor.execute(query, aliasColumns, session);
             }
@@ -155,7 +162,12 @@ public class OracleQueryEngine implements IQueryEngine{
         }
 
         if (limitInc) {
-            sb.append(" WHERE ROWNUM <= ").append(limit);
+            if (whereInc) {
+                sb.append(" AND ROWNUM <= ").append(limit);
+            }else
+            {
+                sb.append(" WHERE ROWNUM <= ").append(limit);
+            }
         }
         return sb.toString().replace("  ", " ");
     }
@@ -251,7 +263,7 @@ public class OracleQueryEngine implements IQueryEngine{
         return sb.toString();
     }
 
-    public Statement getSession() {
+    public Connection getSession() {
         return session;
     }
 }
