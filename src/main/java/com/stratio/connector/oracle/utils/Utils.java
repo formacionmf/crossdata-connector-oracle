@@ -265,32 +265,34 @@ public class Utils {
     }
 
     /**
-     * Get the Crossdata ColumnType from Cassandra DataType
+     * Get the Crossdata ColumnType from oracle DataType
      * @param type The Oracle of the column.
      * @return A {@link com.stratio.crossdata.common.metadata.ColumnType}
      */
     public ColumnType getCrossdataColumn(String type) {
+        ColumnType columnType;
         switch(type){
             case "VARCHAR2":
             case "VARCHAR":
             case "NVARCHAR2":
             case "CHAR":
             case "NCHAR":
-                return ColumnType.TEXT;
+                columnType =  new ColumnType(com.stratio.crossdata.common.metadata.DataType.TEXT);
             case "LONG":
             case "NUMBER":
-                return ColumnType.BIGINT;
+                columnType =  new ColumnType(com.stratio.crossdata.common.metadata.DataType.BIGINT);
             case "FLOAT":
             case "BINARY_FLOAT":
-                return ColumnType.FLOAT;
+                columnType =  new ColumnType(com.stratio.crossdata.common.metadata.DataType.FLOAT);
             case "BINARY_DOUBLE":
-                return ColumnType.DOUBLE;
+                columnType =  new ColumnType(com.stratio.crossdata.common.metadata.DataType.DOUBLE);
             case "DATE":
-                return ColumnType.NATIVE;
+                columnType= new ColumnType(com.stratio.crossdata.common.metadata.DataType.NATIVE);
             default:
-                return null;
+                columnType =  new ColumnType(com.stratio.crossdata.common.metadata.DataType.TEXT);
         }
-
+        columnType.setDbType(type);
+        return columnType;
     }
 
     public static final Semaphore semaphore = new Semaphore(1);

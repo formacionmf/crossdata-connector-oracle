@@ -25,15 +25,10 @@
 package com.stratio.connector.oracle;
 
 import com.stratio.connector.oracle.engine.*;
+import com.stratio.crossdata.common.connector.*;
 import com.stratio.crossdata.common.metadata.IMetadata;
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
-import com.stratio.crossdata.common.connector.IConfiguration;
-import com.stratio.crossdata.common.connector.IConnector;
-import com.stratio.crossdata.common.connector.IMetadataEngine;
-import com.stratio.crossdata.common.connector.IQueryEngine;
-import com.stratio.crossdata.common.connector.IStorageEngine;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
@@ -96,7 +91,7 @@ public class OracleConnector implements IConnector{
         //datastore. ICredentials is currently not supported.
 
         ClusterName clusterName = config.getName();
-        Map<String, String> clusterOptions = config.getOptions();
+        Map<String, String> clusterOptions = config.getClusterOptions();
         Map<String, String> connectorOptions = config.getConnectorOptions();
 
         EngineConfig engineConfig = new EngineConfig();
@@ -194,6 +189,11 @@ public class OracleConnector implements IConnector{
     @Override
     public IMetadataEngine getMetadataEngine() throws UnsupportedException {
         return new OracleMetadataEngine(sessions,defaultLength);
+    }
+
+    @Override
+    public ISqlEngine getSqlEngine() throws UnsupportedException {
+        return null;
     }
 
     /**

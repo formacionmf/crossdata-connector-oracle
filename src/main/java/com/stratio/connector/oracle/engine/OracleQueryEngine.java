@@ -179,6 +179,11 @@ public class OracleQueryEngine implements IQueryEngine{
     }
 
     @Override
+    public void pagedExecute(String queryId, LogicalWorkflow workflow, IResultHandler resultHandler, int pageSize) throws ConnectorException {
+        throw new UnsupportedException("Paged execute not supported yet.");
+    }
+
+    @Override
     public void stop(String queryId) throws ConnectorException {
         throw new UnsupportedException("Stop for Async execute not supported yet.");
     }
