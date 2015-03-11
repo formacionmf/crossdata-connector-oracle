@@ -1,0 +1,4 @@
+export ORACLE_CONNECTOR_CONF="/etc/sds/connectors/oracle"
+export ORACLE_CONNECTOR_CONF="/etc/sds/connectors/oracle"
+export ORACLE_CONNECTOR_HOME="/opt/sds/connectors/oracle"
+export ORACLE_CONNECTOR_LOGS="/var/logs/sds/connectors/oracle"

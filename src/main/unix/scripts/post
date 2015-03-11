@@ -1,0 +1,51 @@
+#!/bin/sh
+
+set -e
+
+GROUP='stratio'
+USER='stratio'
+DIR_INSTALL='/opt/sds/connectors/oracle'
+DIR_CONF='/etc/sds/connectors/oracle'
+DIR_LOG='/var/log/sds/connectors/oracle'
+
+case "$1" in
+  configure)
+
+  # Add stratio group if it doesn't already exists
+  if ! getent group $GROUP >/dev/null 2>&1; then
+    groupadd ${GROUP}
+  fi
+
+  # Add stratio user if it doesn't already exists
+  if ! getent passwd $USER >/dev/null 2>&1; then
+    [ -d /opt ] || mkdir /opt
+    useradd -M -d /opt/sds -g ${GROUP} -s /bin/bash ${USER}
+  else
+    usermod -G $GROUP $USER
+  fi
+
+  chown -R ${USER}:${GROUP} /opt/sds /etc/sds
+  chown root:root /etc/init.d/stratio-connector-oracle
+
+  chown -R ${USER}:${GROUP} $DIR_INSTALL
+  chown -R ${USER}:${GROUP} $DIR_CONF
+  chown -R ${USER}:${GROUP} $DIR_LOG
+  chmod 775 $DIR_INSTALL
+  chmod 775 $DIR_CONF
+  chmod 775 $DIR_LOG
+
+  update-rc.d stratio-connector-oracle defaults
+
+  ;;
+esac
+cp /opt/sds/connectors/oracle/bin/stratio-connector-oracle-* /opt/sds/connectors/oracle/bin/stratio-connector-oracle
+cp /opt/sds/connectors/oracle/template/OracleConnector /etc/init.d/stratio-connector-oracle
+chmod 755 /etc/init.d/stratio-connector-oracle
+chmod 755 /opt/sds/connectors/oracle/bin/stratio-connector-oracle
+chmod +x /etc/default/stratio-connector-oracle
+ln -s /opt/sds/connectors/oracle/logs /var/log/sds/connectors/oracle/stratio-connector-oracle.log
+export ORACLE_CONNECTOR_LIB=/opt/sds/connectors/oracle/
+export ORACLE_CONNECTOR_CONF="/etc/sds/connectors/oracle"
+
+exit 0
+

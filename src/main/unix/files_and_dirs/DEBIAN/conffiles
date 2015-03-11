@@ -1,0 +1,4 @@
+/etc/default/stratio-connector-oracle
+/etc/sds/stratio-connector-oracle/connector-application.conf
+/etc/sds/stratio-connector-oracle/log.properties
+/etc/sds/stratio-connector-oracle/connector-reference.conf

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This file contains the manifest for the connector. -->
+<Connector>
+    <!-- Name of the connector as it will be identified in Crossdata -->
+    <ConnectorName>OracleConnector</ConnectorName>
+    <!-- Define the list of datastore this connector is able to access. -->
+    <DataStores>
+        <DataStoreName>OracleDatastore</DataStoreName>
+    </DataStores>
+    <!-- Connector version -->
+    <Version>0.0.1</Version>
+
+    <!-- Define the set of required operations the user will be asked to input
+    when attaching the connector -->
+
+    <RequiredProperties>
+        <Property>
+            <PropertyName>DefaultLength</PropertyName>
+            <Description>It is necessary to indicate de default length for the varchar types</Description>
+        </Property>
+        <Property>
+            <PropertyName>DefaultLimit</PropertyName>
+            <Description>It is necessary to indicate de default length for the select statement</Description>
+        </Property>
+    </RequiredProperties>
+
+    <!-- Define the list of operations supported by the connector.
+    Check crossdata/doc/ConnectorOperations.md for more information. -->
+    <SupportedOperations>
+        <operation>CREATE_TABLE</operation>
+        <operation>ALTER_TABLE</operation>
+        <operation>DROP_TABLE</operation>
+        <operation>CREATE_INDEX</operation>
+        <operation>DROP_INDEX</operation>
+        <operation>INSERT</operation>
+        <operation>PROJECT</operation>
+        <operation>SELECT_OPERATOR</operation>
+        <operation>SELECT_LIMIT</operation>
+        <operation>SELECT_ORDER_BY</operation>
+        <operation>FILTER_PK_EQ</operation>
+        <operation>FILTER_NON_INDEXED_EQ</operation>
+        <operation>FILTER_NON_INDEXED_GT</operation>
+        <operation>FILTER_NON_INDEXED_LT</operation>
+        <operation>FILTER_NON_INDEXED_LET</operation>
+        <operation>FILTER_NON_INDEXED_GET</operation>
+        <operation>UPDATE_PK_EQ</operation>
+        <operation>UPDATE_NON_INDEXED_EQ</operation>
+        <operation>UPDATE_PK_LT</operation>
+        <operation>UPDATE_PK_LET</operation>
+        <operation>UPDATE_PK_GT</operation>
+        <operation>UPDATE_PK_GET</operation>
+        <operation>UPDATE_NON_INDEXED_GET</operation>
+        <operation>UPDATE_NON_INDEXED_GT</operation>
+        <operation>UPDATE_NON_INDEXED_LT</operation>
+        <operation>UPDATE_NON_INDEXED_LET</operation>
+        <operation>DELETE_PK_EQ</operation>
+        <operation>TRUNCATE_TABLE</operation>
+        <operation>IMPORT_METADATA</operation>
+    </SupportedOperations>
+</Connector>

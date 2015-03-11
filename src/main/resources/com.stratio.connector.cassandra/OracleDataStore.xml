@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This file contains the manifest that defines the underlying datastore. -->
+<DataStore>
+    <!-- Name of the target datastore. Be aware that a manifest may already exists for
+    the datastore of your choice. -->
+    <Name>OracleDataStore</Name>
+    <Version>2.0.0</Version>
+    <!-- Define the set of required properties the user will be asked for when defining
+    a cluster of this datastore. -->
+    <RequiredProperties>
+        <Property>
+            <PropertyName>Hosts</PropertyName>
+            <Description>Oracle Host</Description>
+        </Property>
+        <Property>
+            <PropertyName>Port</PropertyName>
+            <Description>Oracle Port</Description>
+        </Property>
+        <Property>
+            <PropertyName>SID</PropertyName>
+            <Description>Oracle SID</Description>
+        </Property>
+        <Property>
+            <PropertyName>user</PropertyName>
+            <Description>Oracle User</Description>
+        </Property>
+        <Property>
+            <PropertyName>password</PropertyName>
+            <Description>Oracle Password</Description>
+        </Property>
+        <Property>
+            <PropertyName>driverClass</PropertyName>
+            <Description>Oracle driver class</Description>
+        </Property>
+        <Property>
+            <PropertyName>connectionUrl</PropertyName>
+            <Description>Oracle connectionUrl</Description>
+        </Property>
+    </RequiredProperties>
+    <!-- List of datastore behaviours -->
+    <Behaviors>
+        <Behavior>UPSERT_ON_INSERT</Behavior>
+    </Behaviors>
+</DataStore>
+
+
+
